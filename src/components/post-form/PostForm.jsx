@@ -1,56 +1,53 @@
-import React, {useForm} from 'react-hook-form';
-import { useCallback } from 'react';
-import {Button, Input, Select, RTE} from '../index';
-import appWriteService from '../../appwrite/config';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import React, { useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { Button, Input, RTE, Select } from "..";
+import appwriteService from "../../appwrite/config";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-
-function PostForm({post}) {
-    const { register, handleSubmit, watch, setValue, control, getValues} = useForm({
+export default function PostForm({ post }) {
+    const { register, handleSubmit, watch, setValue, control, getValues } = useForm({
         defaultValues: {
             title: post?.title || "",
-            slug: post?.slug || "",
+            slug: post?.$id || "",
             content: post?.content || "",
-            status: post?.status || "active"
+            status: post?.status || "active",
         },
     });
 
     const navigate = useNavigate();
-    const userData = useSelector((state) => state.user.userData)
+    const userData = useSelector((state) => state.auth.userData);
 
-    const submit = async(data) => {
+    const submit = async (data) => {
         if (post) {
-            const file = data.image[0] ? await appWriteService.uploadFile(data.image[0]) : null;
+            const file = data.image[0] ? await appwriteService.uploadFile(data.image[0]) : null;
 
-            if(file) {
-                appWriteService.deleteFile(post.featuredImage);
+            if (file) {
+                appwriteService.deleteFile(post.featuredImage);
             }
 
-            const dbPost = await appWriteService.updatePost(post.$id, {
+            const dbPost = await appwriteService.updatePost(post.$id, {
                 ...data,
-                featuredImage : file ? file.$id : undefined
-            })
+                featuredImage: file ? file.$id : undefined,
+            });
+
             if (dbPost) {
                 navigate(`/post/${dbPost.$id}`);
             }
         } else {
-            const file = await appWriteService.uploadFile(data.image[0]);
+            const file = await appwriteService.uploadFile(data.image[0]);
 
-            if(file) {
-                if (file) {
-                    const fileId = file.$id;
-                    data.featuredImage = fileId;
-                    const dbPost = await appWriteService.createPost({ ...data, userId: userData.$id });
+            if (file) {
+                const fileId = file.$id;
+                data.featuredImage = fileId;
+                const dbPost = await appwriteService.createPost({ ...data, userId: userData.$id });
 
-                    if (dbPost) {
-                        navigate(`/post/${dbPost.$id}`);
-                    }
+                if (dbPost) {
+                    navigate(`/post/${dbPost.$id}`);
                 }
             }
         }
-
-    }
+    };
 
     const slugTransform = useCallback((value) => {
         if (value && typeof value === "string")
@@ -73,9 +70,8 @@ function PostForm({post}) {
         return () => subscription.unsubscribe();
     }, [watch, slugTransform, setValue]);
 
-
-  return (
-    <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
+    return (
+        <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
             <div className="w-2/3 px-2">
                 <Input
                     label="Title :"
@@ -114,7 +110,7 @@ function PostForm({post}) {
                 <Select
                     options={["active", "inactive"]}
                     label="Status"
-                    className="mb-4"
+                    className="mb-16"
                     {...register("status", { required: true })}
                 />
                 <Button type="submit" bgColor={post ? "bg-green-500" : undefined} className="w-full">
@@ -122,7 +118,5 @@ function PostForm({post}) {
                 </Button>
             </div>
         </form>
-  )
+    );
 }
-
-export default PostForm

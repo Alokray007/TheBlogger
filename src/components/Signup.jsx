@@ -11,7 +11,7 @@ function Signup() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [error, setError] = useState("");
-    const [register, handleSubmit] = useForm();
+    const {register, handleSubmit} = useForm();
 
     const create = async(data) => {
         setError("");
@@ -73,9 +73,9 @@ function Signup() {
                             placeholder=" Enter your password"
                             {...register("password", {
                                 required: true,
-                                validate : {
-                                    matchPattern : (v) => /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(v) || "Password must follow pattern",
-                                }
+                                // validate : {
+                                //     matchPattern : (v) => /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(v) || "Password must follow pattern",
+                                // }
                             })}
                         />
                         <Button type="submit" className='w-full'>Create Account</Button>
